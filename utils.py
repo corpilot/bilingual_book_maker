@@ -1,7 +1,7 @@
 # Borrowed from : https://github.com/openai/whisper
 LANGUAGES = {
     "en": "english",
-    "zh-hans": "simplified chinese",
+    "zh-hans": "Simplified Chinese",
     "zh-hant": "traditional chinese",
     "de": "german",
     "es": "spanish",

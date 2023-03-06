@@ -97,10 +97,11 @@ class ChatGPT(Base):
                 messages=[
                     {
                         "role": "user",
-                        # english prompt here to save tokens
-                        "content": f"Please help me to translate,`{text}` to {self.language}, please return only translated content not include the origin text",
+                        # english prompt here to save tokens003
+                        "content": f"以下文字由OCR扫描生成, 请返回校正后的文字, 如无错误请原样返回原文: `{text}`",
                     }
                 ],
+                temperature=0.2,
             )
             t_text = (
                 completion["choices"][0]
@@ -124,9 +125,11 @@ class ChatGPT(Base):
                 messages=[
                     {
                         "role": "user",
-                        "content": f"Please help me to translate,`{text}` to Simplified Chinese, please return only translated content not include the origin text",
+                        # english prompt here to save tokens003
+                        "content": f"以下文字由OCR扫描生成, 请返回校正后的文字, 如无错误请原样返回原文: `{text}`",
                     }
                 ],
+                temperature=0.2,
             )
             t_text = (
                 completion["choices"][0]
@@ -135,6 +138,7 @@ class ChatGPT(Base):
                 .encode("utf8")
                 .decode()
             )
+        print('-')
         print(t_text)
         return t_text
 
@@ -177,6 +181,7 @@ class BEPUB:
                 if i.get_type() == 9:
                     soup = bs(i.content, "html.parser")
                     p_list = soup.findAll("p")
+                    print(len(p_list))
                     is_test_done = IS_TEST and index > TEST_NUM
                     for p in p_list:
                         if is_test_done or not p.text or self._is_special_text(p.text):
@@ -190,13 +195,18 @@ class BEPUB:
                             new_p.string = self.translate_model.translate(p.text)
                             self.p_to_save.append(new_p.text)
                         p.insert_after(new_p)
+                        p.extract()
+                        # p=new_p
                         index += 1
+                        if(index % 50 == 0):
+                            self.save_progress()
                         if IS_TEST and index > TEST_NUM:
                             break
                     i.content = soup.prettify().encode()
                 new_book.add_item(i)
             name = self.epub_name.split(".")[0]
-            epub.write_epub(f"{name}_bilingual.epub", new_book, {})
+            print("write")
+            epub.write_epub(f"{name}_fixed.epub", new_book, {})
             pbar.close()
         except (KeyboardInterrupt, Exception) as e:
             print(e)
